@@ -2,7 +2,7 @@
  // seat map //
  //////////////
  let vip_price = 1500;
- let economy_price = 1200;
+ let economy_price = 3000;
  let firstSeatLabel = 1;
  var details = [];
 
@@ -11,25 +11,19 @@
      $total = $('#total'),
      sc = $('#seat-map').seatCharts({
          map: [
-                '___f',
-                'ee_f',
-                'ee_f',
-                'ee_f',
-                'ee_f',
-                'ee_f',
-                'ee_f',
-                'ee_f',
-                'ee_f',
-                'ee_f',
-                'ee_f',
-                'eeef',
+                'ee____',
+                'ee_eee',
+                'ee_eee',
+                '___eee',
+                'ee_eee',
+                'ee_eee',
+                'ee_eee',
+                'ee_eee',
+                'ee_eee',
+                'ee_eee',
+                'eeeeee',
          ],
          seats: {
-             f: {
-                 price: vip_price,
-                 classes: 'first-class seater_35', //your custom CSS class
-                 category: 'First Class'
-             },
              e: {
                  price: economy_price,
                  classes: 'economy-class', //your custom CSS class
@@ -52,8 +46,8 @@
          //     ]
          // },
          click: function() {
-             //alert(vip_price);
              if (this.status() == 'available') {
+                 $(event.target).toggleClass('animated rubberBand')
                  //let's create a new <li> which we'll add to the cart items
                  $('<li class="p-b-4">' + this.data().category + ' Seat # ' +
                          this.settings.label + ': <b>Ksh ' + this.data().price +
@@ -78,6 +72,7 @@
 
                  return 'selected';
              } else if (this.status() == 'selected') {
+                 $(event.target).toggleClass('animated rubberBand')
                  //update the counter
                  $counter.text(sc.find('selected').length - 1);
                  //and total
@@ -102,7 +97,7 @@
          }
      });
 
-let recalculateTotal = (sc) => {
+let recalculateTotal = sc => {
     var total = 0;
 
     //basically find every selected seat and sum its price
@@ -114,6 +109,23 @@ let recalculateTotal = (sc) => {
 }
 //this will handle "[cancel]" link clicks
 $('#selected-seats').on('click', '.cancel-cart-item', function() {
+    $('#'+sc.get($(this).parents('li:first').data('seatId')).settings.id)
+        .toggleClass('animated rubberBand');
     //let's just trigger Click event on the appropriate seat, so we don't have to repeat the logic here
     sc.get($(this).parents('li:first').data('seatId')).click();
 });
+
+
+let booked_seats = function(bus_id) {
+    $.ajax({
+        method: 'GET', //https://examinationcomplaint.theschemaqhigh.co.ke/HCI/api/book/
+        url: 'api/book.php?bus_id='+$.trim(bus_id)+'&booked_seats',
+        success: function (data) {
+            sc.find('unavailable').status('available');
+            data.forEach((element => sc.get([sc.seatIds[element-1]]).status('unavailable')))
+        },
+        error: function (data) {
+            console.log(data)
+        }
+    });
+};
